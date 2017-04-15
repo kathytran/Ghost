@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,20 +35,29 @@ import java.util.Random;
 public class GhostActivity extends AppCompatActivity {
     private static final String COMPUTER_TURN = "Computer's turn";
     private static final String USER_TURN = "Your turn";
+    private TextView txtWord, txtLabel, txtUserScore, txtComputerScore;
     private GhostDictionary dictionary;
     private boolean userTurn = false;
     private Random random = new Random();
+    SimpleDictionary simpleDictionary;
+    String wordFragment = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ghost);
         AssetManager assetManager = getAssets();
-        /**
-         **
-         **  YOUR CODE GOES HERE
-         **
-         **/
+        try {
+            InputStream inputStream = assetManager.open("words.txt");
+            simpleDictionary = new SimpleDictionary(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // instantiate views
+        txtWord = (TextView) findViewById(R.id.ghostText);
+        txtLabel = (TextView) findViewById(R.id.gameStatus);
+
+        // start game
         onStart(null);
     }
 
@@ -108,11 +118,21 @@ public class GhostActivity extends AppCompatActivity {
      */
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        /**
-         **
-         **  YOUR CODE GOES HERE
-         **
-         **/
-        return super.onKeyUp(keyCode, event);
+        // if the key that the user pressed is a letter, the letter is added to the word fragment
+        // otherwise, default to return the value of super.onKeyUp()
+        char c = (char) event.getUnicodeChar();
+        if ((c >= 'a' && c <= 'z') ||( c >= 'A' && c <= 'Z')) {
+            wordFragment = wordFragment + c;
+            txtWord.setText(txtWord.getText().toString() + c);
+            if (simpleDictionary.isWord(wordFragment)) {
+                txtLabel.setText(COMPUTER_TURN);
+                }
+            userTurn = false;
+            // computerTurn();
+            return true;
+        }
+        else {
+            return super.onKeyUp(keyCode, event);
+        }
     }
 }
